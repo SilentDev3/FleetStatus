@@ -1,7 +1,12 @@
 import streamlit as st
 import requests
 import pandas as pd
-import plotly.express as px
+try:
+    import plotly.express as px
+    PLOTLY_AVAILABLE = True
+except Exception:
+    px = None
+    PLOTLY_AVAILABLE = False
 from datetime import datetime
 import logging
 from typing import Dict, List, Optional
@@ -266,14 +271,11 @@ def main():
         st.markdown("### Vehicle List")
         if not merged_df.empty:
             display_df = merged_df[["name", "vin", "status", "speed_mph", "fuel_percent", "engine_hours", "name_driver"]]
-            display_df.columns = ["Name", "VIN", "Status", "Speed (mph)", "Fuel (%)", "Engine Hours", "Driver"]
-            st.dataframe(display_df, use_container_width=True)
-        else:
-            st.info("No vehicles available")
-    
     with tab3:
         st.markdown("### Vehicle Locations Map")
-        if not merged_df.empty and "latitude" in merged_df.columns:
+        if px is None:
+            st.warning("plotly is not available; install it with 'pip install plotly' to view maps and charts.")
+        elif not merged_df.empty and "latitude" in merged_df.columns:
             fig_map = px.scatter_mapbox(
                 merged_df,
                 lat="latitude",
@@ -288,16 +290,23 @@ def main():
             fig_map.update_layout(mapbox_style="open-street-map")
             st.plotly_chart(fig_map, use_container_width=True)
         else:
-            st.info("No location data available")
-    
     with tab4:
         st.markdown("### Fleet Analytics")
-        if not merged_df.empty:
+        if px is None:
+            st.warning("plotly is not available; install it with 'pip install plotly' to view analytics charts.")
+        elif not merged_df.empty:
             col1, col2 = st.columns(2)
             with col1:
                 fig_speed = px.histogram(merged_df, x="speed_mph", title="Speed Distribution")
                 st.plotly_chart(fig_speed, use_container_width=True)
             with col2:
+                fig_fuel = px.box(merged_df, y="fuel_percent", title="Fuel Levels")
+                st.plotly_chart(fig_fuel, use_container_width=True)
+            
+            fig_engine = px.scatter(merged_df, x="engine_hours", y="odometer_miles", hover_name="name", title="Engine Hours vs Odometer")
+            st.plotly_chart(fig_engine, use_container_width=True)
+        else:
+            st.info("No data for analytics")
                 fig_fuel = px.box(merged_df, y="fuel_percent", title="Fuel Levels")
                 st.plotly_chart(fig_fuel, use_container_width=True)
             
