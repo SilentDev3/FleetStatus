@@ -290,6 +290,7 @@ def main():
             fig_map.update_layout(mapbox_style="open-street-map")
             st.plotly_chart(fig_map, use_container_width=True)
         else:
+            st.info("No location data available")
     with tab4:
         st.markdown("### Fleet Analytics")
         if px is None:
@@ -300,13 +301,6 @@ def main():
                 fig_speed = px.histogram(merged_df, x="speed_mph", title="Speed Distribution")
                 st.plotly_chart(fig_speed, use_container_width=True)
             with col2:
-                fig_fuel = px.box(merged_df, y="fuel_percent", title="Fuel Levels")
-                st.plotly_chart(fig_fuel, use_container_width=True)
-            
-            fig_engine = px.scatter(merged_df, x="engine_hours", y="odometer_miles", hover_name="name", title="Engine Hours vs Odometer")
-            st.plotly_chart(fig_engine, use_container_width=True)
-        else:
-            st.info("No data for analytics")
                 fig_fuel = px.box(merged_df, y="fuel_percent", title="Fuel Levels")
                 st.plotly_chart(fig_fuel, use_container_width=True)
             
